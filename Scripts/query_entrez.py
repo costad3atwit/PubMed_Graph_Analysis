@@ -7,8 +7,7 @@ from urllib.error import HTTPError, URLError
 EMAIL      = "costad3@wit.edu"
 API_KEY    = "c44aa473bb61316f789ea8d5f3b35a73f208"
 # IMPORTANT: Update BASE_TERM to match your actual search
-BASE_TERM  = ('("Alzheimer Disease"[MeSH Terms] OR Alzheimer*[Title/Abstract]) '
-              'AND hasabstract[text] AND medline[sb]')
+BASE_TERM  = ('hasabstract[text] AND medline[sb]')
 START_DATE = "2015/10/01"
 END_DATE   = "2025/10/03"
 BATCH      = 200
