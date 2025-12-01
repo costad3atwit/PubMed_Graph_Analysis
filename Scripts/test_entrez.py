@@ -6,10 +6,9 @@ from urllib.error import HTTPError, URLError
 # ---------- CONFIG ----------
 EMAIL      = "costad3@wit.edu"
 API_KEY    = "c44aa473bb61316f789ea8d5f3b35a73f208"
-BASE_TERM  = ('("Alzheimer Disease"[MeSH Terms] OR Alzheimer*[Title/Abstract]) '
-              'AND hasabstract[text] AND medline[sb]')
-START_DATE = "2015/10/01"  # last 10 years up to today
-END_DATE   = "2025/10/03"  # today as of time of implementation
+BASE_TERM  = ('hasabstract[text] AND medline[sb]')
+START_DATE = "2015/12/01"  # last 10 years up to today
+END_DATE   = "2025/12/01"  # today as of time of implementation
 BATCH      = 200
 MAX_RETRY  = 6
 BASE_DELAY = 0.12
