@@ -6,14 +6,16 @@ from urllib.error import HTTPError, URLError
 # ---------- CONFIG ----------
 EMAIL      = "costad3@wit.edu"
 API_KEY    = "c44aa473bb61316f789ea8d5f3b35a73f208"
-BASE_TERM  = ('hasabstract[text] AND medline[sb]')
-START_DATE = "2015/12/01"  # last 10 years up to today
-END_DATE   = "2025/12/01"  # today as of time of implementation
+# IMPORTANT: Update BASE_TERM to match your actual search
+BASE_TERM  = ('("Alzheimer Disease"[MeSH Terms] OR Alzheimer*[Title/Abstract]) '
+              'AND hasabstract[text] AND medline[sb]')
+START_DATE = "2015/10/01"
+END_DATE   = "2025/10/03"
 BATCH      = 200
 MAX_RETRY  = 6
-BASE_DELAY = 0.12
+BASE_DELAY = 0.2  # Increased from 0.12 for broader searches
 OUT_CSV    = "papers.csv"
-MAX_RESULTS_PER_CHUNK = 10000  # PubMed's limit
+MAX_RESULTS_PER_CHUNK = 10000  # PubMed's hard limit
 
 Entrez.email = EMAIL
 if API_KEY:
@@ -24,15 +26,12 @@ def quarters_between(start_str, end_str):
     """Yield (mindate, maxdate) per quarter between start and end (inclusive)."""
     def parse(s): y,m,d = map(int, s.split("/")); return dt.date(y,m,d)
     start, end = parse(start_str), parse(end_str)
-    # Snap to first day of quarter for the start
     qm = ((start.month - 1)//3)*3 + 1
     cur = dt.date(start.year, qm, 1)
-    # Iterate quarters
     while cur <= end:
         q_end_month = cur.month + 2
         year2 = cur.year + (q_end_month-1)//12
         month2 = ((q_end_month-1) % 12) + 1
-        # last day of that month
         if month2 == 12:
             last_day = dt.date(year2, month2, 31)
         else:
@@ -40,13 +39,12 @@ def quarters_between(start_str, end_str):
         mind = max(cur, start)
         maxd = min(last_day, end)
         yield (mind.strftime("%Y/%m/%d"), maxd.strftime("%Y/%m/%d"))
-        # advance 3 months
         nm = cur.month + 3
         ny = cur.year + (nm-1)//12
         cur = dt.date(ny, ((nm-1)%12)+1, 1)
 
 def months_in(mindate, maxdate):
-    """If a quarter still exceeds 10k, split into months."""
+    """Split a date range into months."""
     y1,m1,_ = map(int, mindate.split("/"))
     y2,m2,_ = map(int, maxdate.split("/"))
     cur = dt.date(y1,m1,1)
@@ -60,7 +58,7 @@ def months_in(mindate, maxdate):
         cur = dt.date(ny, nm, 1)
 
 def days_in(mindate, maxdate):
-    """If a month still exceeds 10k, split into individual days."""
+    """Split a date range into individual days."""
     start = dt.datetime.strptime(mindate, "%Y/%m/%d").date()
     end = dt.datetime.strptime(maxdate, "%Y/%m/%d").date()
     cur = start
@@ -69,12 +67,14 @@ def days_in(mindate, maxdate):
         cur += dt.timedelta(days=1)
 
 def esearch_count(term, mindate, maxdate):
+    """Get count and history for a date range."""
     h = Entrez.esearch(db="pubmed", term=term, usehistory="y",
                        datetype="pdat", mindate=mindate, maxdate=maxdate, retmax=0)
     rec = Entrez.read(h)
     return int(rec["Count"]), rec["WebEnv"], rec["QueryKey"]
 
 def efetch_retry(webenv, qk, retstart, retmax):
+    """Fetch with exponential backoff retry."""
     delay = BASE_DELAY
     for attempt in range(1, MAX_RETRY+1):
         try:
@@ -84,10 +84,15 @@ def efetch_retry(webenv, qk, retstart, retmax):
         except (HTTPError, URLError) as e:
             print(f"[{attempt}] efetch @ {retstart} -> {e}", file=sys.stderr)
             if attempt == MAX_RETRY: raise
-            time.sleep(delay); delay = min(delay*2, 15)
+            time.sleep(delay)
+            delay = min(delay*2, 15)
 
 def harvest_slice(webenv, qk, count, seen, writer):
-    """Fetch and write results for a given date range slice."""
+    """Fetch and write results for a date range (must be ≤10k results)."""
+    # Safety check - use 9999 to stay safely under the 10k limit
+    if count > 9999:
+        count = 9999
+    
     for start in range(0, count, BATCH):
         h = efetch_retry(webenv, qk, start, BATCH)
         recs = Medline.parse(h)
@@ -108,7 +113,7 @@ def harvest_slice(webenv, qk, count, seen, writer):
             ])
             wrote += 1
         h.close()
-        time.sleep(BASE_DELAY)  # courteous pacing
+        time.sleep(BASE_DELAY)
         print(f"    wrote {wrote} (retstart={start})", file=sys.stderr)
 
 def process_date_range(d_start, d_end, seen, writer, depth=0):
@@ -117,39 +122,38 @@ def process_date_range(d_start, d_end, seen, writer, depth=0):
     depth: 0=quarter, 1=month, 2=day
     """
     indent = "  " * depth
-    range_label = ["Quarter", "Month", "Day"][depth] if depth < 3 else "Range"
+    range_labels = ["Quarter", "Month", "Day"]
+    label = range_labels[depth] if depth < 3 else "Range"
     
     count, webenv, qk = esearch_count(BASE_TERM, d_start, d_end)
-    print(f"{indent}{range_label} {d_start}..{d_end} -> {count:,} results", file=sys.stderr)
+    print(f"{indent}{label} {d_start}..{d_end} -> {count:,} results", file=sys.stderr)
     
-    # If under the limit, harvest directly
+    # If under limit, harvest directly
     if count <= MAX_RESULTS_PER_CHUNK:
         harvest_slice(webenv, qk, count, seen, writer)
         return
     
-    # Otherwise, subdivide based on current depth
-    if depth == 0:  # Quarter -> split to months
+    # Subdivide based on depth
+    if depth == 0:  # Quarter -> Months
         print(f"{indent}  Splitting into months...", file=sys.stderr)
         for m_start, m_end in months_in(d_start, d_end):
             process_date_range(m_start, m_end, seen, writer, depth=1)
     
-    elif depth == 1:  # Month -> split to days
+    elif depth == 1:  # Month -> Days
         print(f"{indent}  Splitting into days...", file=sys.stderr)
         for day_start, day_end in days_in(d_start, d_end):
             process_date_range(day_start, day_end, seen, writer, depth=2)
     
-    else:  # Day level - if still over 10k, we have a problem but harvest anyway
+    else:  # Day level - can't subdivide further
         if count > MAX_RESULTS_PER_CHUNK:
-            print(f"{indent}  WARNING: Single day has {count:,} results (>10k limit)", file=sys.stderr)
-            print(f"{indent}  Will fetch up to {MAX_RESULTS_PER_CHUNK:,} results", file=sys.stderr)
-            # Harvest what we can (up to 10k)
-            harvest_slice(webenv, qk, min(count, MAX_RESULTS_PER_CHUNK), seen, writer)
+            print(f"{indent}  Day has {count:,} results, taking first 9,999", file=sys.stderr)
+            harvest_slice(webenv, qk, 9999, seen, writer)
         else:
             harvest_slice(webenv, qk, count, seen, writer)
 
 # ---------- MAIN ----------
 def main():
-    # De-dup using existing CSV if present
+    # Check for existing data
     seen = set()
     try:
         with open(OUT_CSV, encoding="utf-8") as f:
@@ -168,11 +172,14 @@ def main():
         w.writerow(["pmid","year","journal","title","abstract","pub_types"])
 
     # Process each quarter
-    for q_start, q_end in quarters_between(START_DATE, END_DATE):
-        process_date_range(q_start, q_end, seen, w, depth=0)
-
-    out.close()
-    print(f"\nDone. Total unique PMIDs: {len(seen):,}", file=sys.stderr)
+    try:
+        for q_start, q_end in quarters_between(START_DATE, END_DATE):
+            process_date_range(q_start, q_end, seen, w, depth=0)
+    except KeyboardInterrupt:
+        print("\n\nInterrupted by user. Progress saved.", file=sys.stderr)
+    finally:
+        out.close()
+        print(f"\nTotal unique PMIDs fetched: {len(seen):,}", file=sys.stderr)
 
 if __name__ == "__main__":
     main()
