@@ -155,39 +155,34 @@ def print_step_header(step):
     logging.info("")
 
 def run_script(script_path):
-    """Run a Python script and return success status"""
+    """Run a Python script and stream output in real-time to log"""
     try:
-        # Run script with output captured
-        result = subprocess.run(
+        # Use Popen to stream output line by line (not run() which buffers!)
+        process = subprocess.Popen(
             [sys.executable, str(script_path)],
-            check=True,
-            capture_output=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,  # Merge stderr into stdout
             text=True,
-            encoding='utf-8'
+            encoding='utf-8',
+            bufsize=1,  # Line buffered - enables real-time streaming
+            universal_newlines=True
         )
         
-        # Log stdout
-        if result.stdout:
-            for line in result.stdout.splitlines():
+        # Stream output line by line in real-time
+        for line in process.stdout:
+            line = line.rstrip('\n')
+            if line:  # Don't log empty lines
                 logging.info(f"  {line}")
         
-        # Log stderr if any
-        if result.stderr:
-            for line in result.stderr.splitlines():
-                logging.warning(f"  {line}")
+        # Wait for process to complete and get return code
+        return_code = process.wait()
         
-        return True
-    except subprocess.CalledProcessError as e:
-        logging.error(f"Script failed with return code {e.returncode}")
-        if e.stdout:
-            logging.error("STDOUT:")
-            for line in e.stdout.splitlines():
-                logging.error(f"  {line}")
-        if e.stderr:
-            logging.error("STDERR:")
-            for line in e.stderr.splitlines():
-                logging.error(f"  {line}")
-        return False
+        if return_code == 0:
+            return True
+        else:
+            logging.error(f"Script failed with return code {return_code}")
+            return False
+            
     except FileNotFoundError:
         logging.error(f"Script not found: {script_path}")
         return False
