@@ -54,7 +54,7 @@ DATA_DIR.mkdir(exist_ok=True)
 def setup_logging():
     """Setup logging with timestamp"""
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    log_file = LOG_DIR / f"pipeline_run_{timestamp}.log"
+    log_file = LOGS_DIR / f"pipeline_run_{timestamp}.log"
     
     # Configure logging to write to both file and console
     logging.basicConfig(
@@ -80,7 +80,7 @@ PIPELINE_STEPS = [
     {
         "number": 2,
         "name": "Fetch PubMed Papers",
-        "script": "test_entrez.py",
+        "script": "query_entrez.py",
         "description": "Download Alzheimer's papers from PubMed (can take hours)",
         "optional": True
     },
