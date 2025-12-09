@@ -20,12 +20,21 @@ import numpy as np
 from gensim.models import KeyedVectors
 from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.cluster import AgglomerativeClustering
-from pathlib import Path
 import time
 import re
 
 # ---------- CONFIG ----------
-DATA_DIR = Path("C:/Users/sirda/Dropbox (Personal)/Documents/Fall '25/Data Mining/PubMed Project/Data")
+from pathlib import Path
+
+SCRIPT_DIR = Path(__file__).resolve().parent
+
+PROJECT_ROOT = SCRIPT_DIR.parent
+
+DATA_DIR = PROJECT_ROOT / "Data"
+FIGURES_DIR = PROJECT_ROOT / "Figures"
+LOGS_DIR = PROJECT_ROOT / "Logs"
+GRAPHS_DIR = PROJECT_ROOT / "Graphs"
+
 TERMS_FILE = DATA_DIR / "terms.csv"
 AGG_FILE = DATA_DIR / "aggregated.csv"
 EMBEDDINGS_FILE = DATA_DIR / "BioWordVec_PubMed_MIMICIII_d200.vec.bin"

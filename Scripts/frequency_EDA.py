@@ -2,7 +2,6 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from wordcloud import WordCloud
 from collections import Counter
-from pathlib import Path
 import re
 import time
 
@@ -10,8 +9,18 @@ start_time = time.time()
 
 print("=== Frequency Analysis Script Started ===")
 
-# === File paths ===
-DATA_DIR = Path("C:/Users/sirda/Dropbox (Personal)/Documents/Fall '25/Data Mining/PubMed Project/Data")
+# ---------- CONFIG ----------
+from pathlib import Path
+
+SCRIPT_DIR = Path(__file__).resolve().parent
+
+PROJECT_ROOT = SCRIPT_DIR.parent
+
+DATA_DIR = PROJECT_ROOT / "Data"
+OUTPUT_DIR = PROJECT_ROOT / "Figures"
+LOGS_DIR = PROJECT_ROOT / "Logs"
+GRAPHS_DIR = PROJECT_ROOT / "Graphs"
+
 TERMS_PATH = DATA_DIR / "terms.csv"
 PAPERS_PATH = DATA_DIR / "papers.csv"
 
@@ -74,7 +83,9 @@ if not freq_df.empty:
     plt.ylabel("Term")
     plt.title("Top 20 Terms in Paper Titles")
     plt.tight_layout()
-    plt.show()
+    plt.savefig(OUTPUT_DIR / "eda_top20_terms.png", dpi=300, bbox_inches='tight')
+    plt.close()
+    print(f"Saved: {OUTPUT_DIR / 'eda_top20_terms.png'}")
 
     # === Generate Word Cloud ===
     wc = WordCloud(width=1000, height=600, background_color="white").generate_from_frequencies(term_counts)
@@ -82,7 +93,10 @@ if not freq_df.empty:
     plt.imshow(wc, interpolation="bilinear")
     plt.axis("off")
     plt.title("Word Cloud of Terms in Paper Titles")
-    plt.show()
+    plt.tight_layout()
+    plt.savefig(OUTPUT_DIR / "eda_wordcloud_terms.png", dpi=300, bbox_inches='tight')
+    plt.close()
+    print(f"Saved: {OUTPUT_DIR / 'eda_wordcloud_terms.png'}")
 else:
     print("No matching terms found to visualize.")
 
@@ -119,7 +133,9 @@ try:
     plt.ylabel("Drug", fontsize=12)
     plt.title("Top 20 Drugs by Co-Mention Frequency (After Specificity Filtering)", fontsize=14)
     plt.tight_layout()
-    plt.show()
+    plt.savefig(OUTPUT_DIR / "eda_top20_drugs.png", dpi=300, bbox_inches='tight')
+    plt.close()
+    print(f"Saved: {OUTPUT_DIR / 'eda_top20_drugs.png'}")
     
     # === Plot top diseases ===
     disease_freq_df = pd.DataFrame(disease_counts.most_common(20), columns=["disease", "mentions"])
@@ -130,7 +146,9 @@ try:
     plt.ylabel("Disease", fontsize=12)
     plt.title("Top 20 Diseases by Co-Mention Frequency (After Specificity Filtering)", fontsize=14)
     plt.tight_layout()
-    plt.show()
+    plt.savefig(OUTPUT_DIR / "eda_top20_diseases.png", dpi=300, bbox_inches='tight')
+    plt.close()
+    print(f"Saved: {OUTPUT_DIR / 'eda_top20_diseases.png'}")
     
     # === Word clouds for refined data ===
     if drug_counts:
@@ -141,7 +159,9 @@ try:
         plt.axis("off")
         plt.title("Word Cloud: Drugs (Refined Data)", fontsize=14)
         plt.tight_layout()
-        plt.show()
+        plt.savefig(OUTPUT_DIR / "eda_wordcloud_drugs.png", dpi=300, bbox_inches='tight')
+        plt.close()
+        print(f"Saved: {OUTPUT_DIR / 'eda_wordcloud_drugs.png'}")
     
     if disease_counts:
         disease_wc = WordCloud(width=1200, height=600, background_color="white",
@@ -151,7 +171,9 @@ try:
         plt.axis("off")
         plt.title("Word Cloud: Diseases (Refined Data)", fontsize=14)
         plt.tight_layout()
-        plt.show()
+        plt.savefig(OUTPUT_DIR / "eda_wordcloud_diseases.png", dpi=300, bbox_inches='tight')
+        plt.close()
+        print(f"Saved: {OUTPUT_DIR / 'eda_wordcloud_diseases.png'}")
     
     # === Analysis from aggregated data (showing strongest associations) ===
     print("\n=== Top Drug-Disease Associations (by paper count) ===")
@@ -176,7 +198,9 @@ try:
             startangle=90, colors=colors, explode=explode, textprops={'fontsize': 12})
     plt.title("Co-Mention Location Distribution\n(Title, Abstract, or Both)", fontsize=14, pad=20)
     plt.tight_layout()
-    plt.show()
+    plt.savefig(OUTPUT_DIR / "eda_comention_locations.png", dpi=300, bbox_inches='tight')
+    plt.close()
+    print(f"Saved: {OUTPUT_DIR / 'eda_comention_locations.png'}")
     
     # === Distribution plots ===
     plt.figure(figsize=(14, 5))
@@ -196,9 +220,10 @@ try:
     plt.xlabel("Years Between First and Last Paper", fontsize=11)
     plt.ylabel("Frequency", fontsize=11)
     plt.title("Research Timeline Spans", fontsize=12)
-    
     plt.tight_layout()
-    plt.show()
+    plt.savefig(OUTPUT_DIR / "eda_distributions.png", dpi=300, bbox_inches='tight')
+    plt.close()
+    print(f"Saved: {OUTPUT_DIR / 'eda_distributions.png'}")
     
 except FileNotFoundError as e:
     print(f"\nRefined data files not found: {e}")

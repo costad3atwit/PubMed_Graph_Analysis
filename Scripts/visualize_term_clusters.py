@@ -14,9 +14,10 @@ Outputs:
 
 import pandas as pd
 import numpy as np
+import matplotlib
+matplotlib.use('Agg')  # Use non-interactive backend
 import matplotlib.pyplot as plt
 import seaborn as sns
-from pathlib import Path
 from gensim.models import KeyedVectors
 from sklearn.manifold import TSNE
 from sklearn.decomposition import PCA
@@ -28,8 +29,17 @@ sns.set_style("whitegrid")
 plt.rcParams['figure.figsize'] = (12, 8)
 
 # ---------- CONFIG ----------
-DATA_DIR = Path("C:/Users/sirda/Dropbox (Personal)/Documents/Fall '25/Data Mining/PubMed Project/Data")
-PLOT_DIR = Path("C:/Users/sirda/Dropbox (Personal)/Documents/Fall '25/Data Mining/PubMed Project/Figures")
+from pathlib import Path
+
+SCRIPT_DIR = Path(__file__).resolve().parent
+
+PROJECT_ROOT = SCRIPT_DIR.parent
+
+DATA_DIR = PROJECT_ROOT / "Data"
+PLOT_DIR = PROJECT_ROOT / "Figures"
+LOGS_DIR = PROJECT_ROOT / "Logs"
+GRAPHS_DIR = PROJECT_ROOT / "Graphs"
+
 CLUSTERS_FILE = DATA_DIR / "synonym_clusters.csv"
 MAPPING_FILE = DATA_DIR / "canonical_mapping.csv"
 EMBEDDINGS_FILE = DATA_DIR / "BioWordVec_PubMed_MIMICIII_d200.vec.bin"
@@ -46,11 +56,11 @@ try:
     clusters_df = pd.read_csv(CLUSTERS_FILE)
     mapping_df = pd.read_csv(MAPPING_FILE)
     term_emb_df = pd.read_csv(TERM_EMB_FILE)
-    print(f"      ✓ Loaded {len(clusters_df):,} clusters")
-    print(f"      ✓ Loaded {len(mapping_df):,} mappings")
-    print(f"      ✓ Loaded {len(term_emb_df):,} term embeddings")
+    print(f"       Loaded {len(clusters_df):,} clusters")
+    print(f"       Loaded {len(mapping_df):,} mappings")
+    print(f"       Loaded {len(term_emb_df):,} term embeddings")
 except FileNotFoundError as e:
-    print(f"      ✗ Error: {e}")
+    print(f"       Error: {e}")
     print("      Make sure to run normalize_terms_embeddings.py first!")
     exit(1)
 
@@ -79,7 +89,7 @@ ax2.grid(alpha=0.3)
 
 plt.tight_layout()
 plt.savefig(PLOT_DIR / "cluster_size_distribution.png", dpi=300, bbox_inches='tight')
-print(f"      ✓ Saved to {PLOT_DIR / 'cluster_size_distribution.png'}")
+print(f"       Saved to {PLOT_DIR / 'cluster_size_distribution.png'}")
 plt.close()
 
 # ---------- VIZ 2: TOP CLUSTERS ----------
@@ -114,7 +124,7 @@ ax.legend(handles=legend_elements, loc='lower right')
 
 plt.tight_layout()
 plt.savefig(PLOT_DIR / "top_clusters.png", dpi=300, bbox_inches='tight')
-print(f"      ✓ Saved to {PLOT_DIR / 'top_clusters.png'}")
+print(f"       Saved to {PLOT_DIR / 'top_clusters.png'}")
 plt.close()
 
 # ---------- VIZ 3: CLUSTER EXAMPLES ----------
@@ -166,7 +176,7 @@ plt.suptitle('Example Synonym Clusters (Canonical in Red)',
              fontsize=16, fontweight='bold', y=0.995)
 plt.tight_layout()
 plt.savefig(PLOT_DIR / "cluster_examples.png", dpi=300, bbox_inches='tight')
-print(f"      ✓ Saved to {PLOT_DIR / 'cluster_examples.png'}")
+print(f"       Saved to {PLOT_DIR / 'cluster_examples.png'}")
 plt.close()
 
 # ---------- VIZ 4: MAPPING STATISTICS ----------
@@ -242,7 +252,7 @@ ax4.set_title('Summary Statistics', fontsize=12, fontweight='bold', pad=20)
 plt.suptitle('Synonym Mapping Statistics', fontsize=16, fontweight='bold')
 plt.tight_layout()
 plt.savefig(PLOT_DIR / "mapping_statistics.png", dpi=300, bbox_inches='tight')
-print(f"      ✓ Saved to {PLOT_DIR / 'mapping_statistics.png'}")
+print(f"       Saved to {PLOT_DIR / 'mapping_statistics.png'}")
 plt.close()
 
 # ---------- VIZ 5: EMBEDDING SPACE (t-SNE) ----------
@@ -315,7 +325,7 @@ try:
         
         plt.tight_layout()
         plt.savefig(PLOT_DIR / "embedding_space_tsne.png", dpi=300, bbox_inches='tight')
-        print(f"      ✓ Saved to {PLOT_DIR / 'embedding_space_tsne.png'}")
+        print(f"       Saved to {PLOT_DIR / 'embedding_space_tsne.png'}")
         plt.close()
         
         # Create an annotated version with top clusters
@@ -343,18 +353,18 @@ try:
         
         plt.tight_layout()
         plt.savefig(PLOT_DIR / "embedding_space_annotated.png", dpi=300, bbox_inches='tight')
-        print(f"      ✓ Saved to {PLOT_DIR / 'embedding_space_annotated.png'}")
+        print(f"       Saved to {PLOT_DIR / 'embedding_space_annotated.png'}")
         plt.close()
     else:
-        print(f"      ⚠ Skipping t-SNE: not enough vectors ({len(vectors)})")
+        print(f"       Skipping t-SNE: not enough vectors ({len(vectors)})")
 
 except Exception as e:
-    print(f"      ⚠ Could not create t-SNE visualization: {e}")
+    print(f"       Could not create t-SNE visualization: {e}")
     print("      This is optional - other visualizations are complete")
 
 # ---------- SUMMARY ----------
 print("\n" + "=" * 60)
-print("✓ Visualization complete!")
+print(" Visualization complete!")
 print("=" * 60)
 print(f"\nAll plots saved to: {PLOT_DIR}")
 print("\nGenerated visualizations:")

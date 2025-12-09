@@ -1,10 +1,20 @@
-from pathlib import Path
 import time, csv
 import pandas as pd
 import os
 
-PROJECT_ROOT = Path(__file__).resolve().parent.parent
-DATA_PATH = PROJECT_ROOT / "Data" / "d2025.bin"
+# ---------- CONFIG ----------
+from pathlib import Path
+
+SCRIPT_DIR = Path(__file__).resolve().parent
+
+PROJECT_ROOT = SCRIPT_DIR.parent
+
+DATA_DIR = PROJECT_ROOT / "Data"
+FIGURES_DIR = PROJECT_ROOT / "Figures"
+LOGS_DIR = PROJECT_ROOT / "Logs"
+GRAPHS_DIR = PROJECT_ROOT / "Graphs"
+
+DATA_PATH = DATA_DIR / "d2025.bin"
 DELIMITER = "*NEWRECORD"
 
 print("Data path resolved at: " + str(DATA_PATH))

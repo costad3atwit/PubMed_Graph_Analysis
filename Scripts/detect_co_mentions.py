@@ -12,10 +12,19 @@ Output:
 
 import csv, re, string
 import ahocorasick
+
+# ---------- CONFIG ----------
 from pathlib import Path
 
+SCRIPT_DIR = Path(__file__).resolve().parent
 
-DATA_DIR = Path("C:/Users/sirda/Dropbox (Personal)/Documents/Fall '25/Data Mining/PubMed Project/Data")
+PROJECT_ROOT = SCRIPT_DIR.parent
+
+DATA_DIR = PROJECT_ROOT / "Data"
+FIGURES_DIR = PROJECT_ROOT / "Figures"
+LOGS_DIR = PROJECT_ROOT / "Logs"
+GRAPHS_DIR = PROJECT_ROOT / "Graphs"
+
 TERMS_FILE = DATA_DIR / "terms.csv"
 PAPERS_FILE = DATA_DIR / "papers.csv"
 OUT_FILE = DATA_DIR / "co-mentions.csv"

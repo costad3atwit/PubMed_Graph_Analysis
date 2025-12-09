@@ -28,11 +28,45 @@ Options:
 import subprocess
 import sys
 import time
-from pathlib import Path
+
 import argparse
+import logging
+from datetime import datetime
 
 # ---------- CONFIG ----------
-SCRIPT_DIR = Path("C:/Users/sirda/Dropbox (Personal)/Documents/Fall '25/Data Mining/PubMed Project/Scripts")
+from pathlib import Path
+
+SCRIPT_DIR = Path(__file__).resolve().parent
+
+PROJECT_ROOT = SCRIPT_DIR.parent
+
+DATA_DIR = PROJECT_ROOT / "Data"
+FIGURES_DIR = PROJECT_ROOT / "Figures"
+LOGS_DIR = PROJECT_ROOT / "Logs"
+GRAPHS_DIR = PROJECT_ROOT / "Graphs"
+
+# Create directories if they don't exist already (they should)
+FIGURES_DIR.mkdir(exist_ok=True)
+LOGS_DIR.mkdir(exist_ok=True)
+GRAPHS_DIR.mkdir(exist_ok=True)
+DATA_DIR.mkdir(exist_ok=True)
+
+def setup_logging():
+    """Setup logging with timestamp"""
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    log_file = LOG_DIR / f"pipeline_run_{timestamp}.log"
+    
+    # Configure logging to write to both file and console
+    logging.basicConfig(
+        level=logging.INFO,
+        format='%(asctime)s - %(levelname)s - %(message)s',
+        handlers=[
+            logging.FileHandler(log_file, encoding='utf-8'),
+            logging.StreamHandler(sys.stdout)
+        ]
+    )
+    
+    return log_file
 
 # Pipeline steps in order
 PIPELINE_STEPS = [
@@ -104,36 +138,63 @@ PIPELINE_STEPS = [
 # ---------- HELPER FUNCTIONS ----------
 def print_header(text):
     """Print a formatted header"""
-    print("\n" + "=" * 80)
-    print(text.center(80))
-    print("=" * 80 + "\n")
+    logging.info("")
+    logging.info("=" * 80)
+    logging.info(text.center(80))
+    logging.info("=" * 80)
+    logging.info("")
 
 def print_step_header(step):
     """Print step information"""
-    print("\n" + "─" * 80)
-    print(f"STEP {step['number']}/7: {step['name'].upper()}")
-    print(f"Script: {step['script']}")
-    print(f"Description: {step['description']}")
-    print("─" * 80 + "\n")
+    logging.info("")
+    logging.info("─" * 80)
+    logging.info(f"STEP {step['number']}/9: {step['name'].upper()}")
+    logging.info(f"Script: {step['script']}")
+    logging.info(f"Description: {step['description']}")
+    logging.info("─" * 80)
+    logging.info("")
 
 def run_script(script_path):
     """Run a Python script and return success status"""
     try:
+        # Run script with output captured
         result = subprocess.run(
             [sys.executable, str(script_path)],
             check=True,
-            capture_output=False,  # Show output in real-time
-            text=True
+            capture_output=True,
+            text=True,
+            encoding='utf-8'
         )
+        
+        # Log stdout
+        if result.stdout:
+            for line in result.stdout.splitlines():
+                logging.info(f"  {line}")
+        
+        # Log stderr if any
+        if result.stderr:
+            for line in result.stderr.splitlines():
+                logging.warning(f"  {line}")
+        
         return True
     except subprocess.CalledProcessError as e:
-        print(f"\n✗ ERROR: Script failed with return code {e.returncode}")
+        logging.error(f"Script failed with return code {e.returncode}")
+        if e.stdout:
+            logging.error("STDOUT:")
+            for line in e.stdout.splitlines():
+                logging.error(f"  {line}")
+        if e.stderr:
+            logging.error("STDERR:")
+            for line in e.stderr.splitlines():
+                logging.error(f"  {line}")
         return False
     except FileNotFoundError:
-        print(f"\n✗ ERROR: Script not found: {script_path}")
+        logging.error(f"Script not found: {script_path}")
         return False
     except Exception as e:
-        print(f"\n✗ ERROR: Unexpected error: {e}")
+        logging.error(f"Unexpected error: {e}")
+        import traceback
+        logging.error(traceback.format_exc())
         return False
 
 def confirm_step(step):
@@ -145,10 +206,12 @@ def confirm_step(step):
         elif response in ['n', 'no']:
             return False
         else:
-            print("Please enter 'y' or 'n'")
+            logging.info("Please enter 'y' or 'n'")
 
 # ---------- MAIN PIPELINE ----------
 def main():
+
+    log_file = setup_logging()
     parser = argparse.ArgumentParser(description="Run the drug-disease graph pipeline")
     parser.add_argument("--skip-fetch", action="store_true", 
                        help="Skip PubMed fetching step (use existing papers.csv)")
@@ -173,21 +236,26 @@ def main():
         args.skip_network = True
         args.skip_viz = True
     
+
+    logging.info("=" * 80)
+    logging.info("DRUG-DISEASE ASSOCIATION GRAPH PIPELINE")
+    logging.info("=" * 80)
+    logging.info(f"Log file: {log_file}")
     print_header("DRUG-DISEASE ASSOCIATION GRAPH PIPELINE")
     
-    print("Pipeline Steps:")
+    logging.info("Pipeline Steps:")
     for step in PIPELINE_STEPS:
         optional_tag = " (optional)" if step['optional'] else ""
-        print(f"  {step['number']}. {step['name']}{optional_tag}")
+        logging.info(f"  {step['number']}. {step['name']}{optional_tag}")
     
     # Determine which steps to run
     start_step = args.from_step if args.from_step else 1
     if start_step < 1 or start_step > 9:
-        print(f"Error: --from-step must be between 1 and 9")
+        logging.info(f"Error: --from-step must be between 1 and 9")
         return 1
     
     if start_step > 1:
-        print(f"\nStarting from step {start_step}")
+        logging.info(f"\nStarting from step {start_step}")
     
     # Track timing
     total_start = time.time()
@@ -200,19 +268,19 @@ def main():
         
         # Check if step should be skipped
         if args.skip_fetch and step['number'] == 2:
-            print(f"\nSkipping Step {step['number']} (--skip-fetch specified)")
+            logging.info(f"\nSkipping Step {step['number']} (--skip-fetch specified)")
             continue
         
         if args.skip_eda and step['number'] == 7:
-            print(f"\nSkipping Step {step['number']} (--skip-eda specified)")
+            logging.info(f"\nSkipping Step {step['number']} (--skip-eda specified)")
             continue
         
         if args.skip_network and step['number'] == 8:
-            print(f"\nSkipping Step {step['number']} (--skip-network specified)")
+            logging.info(f"\nSkipping Step {step['number']} (--skip-network specified)")
             continue
         
         if args.skip_viz and step['number'] == 9:
-            print(f"\nSkipping Step {step['number']} (--skip-viz specified)")
+            logging.info(f"\nSkipping Step {step['number']} (--skip-viz specified)")
             continue
         
         # Show step information
@@ -221,14 +289,14 @@ def main():
         # Ask for confirmation if not in auto mode and step is optional
         if not args.auto and step['optional']:
             if not confirm_step(step):
-                print(f"Skipping step {step['number']}")
+                logging.info(f"Skipping step {step['number']}")
                 continue
         
         # Check if script exists
         script_path = SCRIPT_DIR / step['script']
         
         # Run the script
-        print(f"Running {step['script']}...")
+        logging.info(f"Running {step['script']}...")
         step_start = time.time()
         
         success = run_script(script_path)
@@ -237,14 +305,14 @@ def main():
         step_times.append((step['name'], step_time))
         
         if success:
-            print(f"\n✓ Step {step['number']} completed in {step_time:.1f} seconds")
+            logging.info(f"\n Step {step['number']} completed in {step_time:.1f} seconds")
         else:
-            print(f"\n✗ Step {step['number']} FAILED")
+            logging.info(f"\n Step {step['number']} FAILED")
             
             if step['optional']:
-                print(f"  Continuing despite failure in optional step...")
+                logging.warning(f"  Continuing despite failure in optional step...")
             else:
-                print(f"  Pipeline stopped due to failure in required step")
+                logging.error(f"  Pipeline stopped due to failure in required step")
                 return 1
         
         # Pause between steps
@@ -256,22 +324,22 @@ def main():
     
     print_header("PIPELINE COMPLETED SUCCESSFULLY!")
     
-    print("Step Timing Summary:")
-    print("─" * 80)
+    logging.info("Step Timing Summary:")
+    logging.info("─" * 80)
     for step_name, step_time in step_times:
-        print(f"  {step_name:40s} {step_time:8.1f}s  ({step_time/60:6.1f} min)")
-    print("─" * 80)
-    print(f"  {'TOTAL':40s} {total_time:8.1f}s  ({total_time/60:6.1f} min)")
-    print("─" * 80)
+        logging.info(f"  {step_name:40s} {step_time:8.1f}s  ({step_time/60:6.1f} min)")
+    logging.info("─" * 80)
+    logging.info(f"  {'TOTAL':40s} {total_time:8.1f}s  ({total_time/60:6.1f} min)")
+    logging.info("─" * 80)
     
-    print("\nOutput files are in the Data directory:")
-    print("  - terms.csv")
-    print("  - papers.csv")
-    print("  - co-mentions.csv")
-    print("  - aggregated.csv")
-    print("  - aggregated_canonical.csv")
-    print("  - graphs/drug_disease_graph.graphml")
-    print("  - graphs/interactive_graph.html")
+    logging.info("\nOutput files are in the Data directory:")
+    logging.info("  - terms.csv")
+    logging.info("  - papers.csv")
+    logging.info("  - co-mentions.csv")
+    logging.info("  - aggregated.csv")
+    logging.info("  - aggregated_canonical.csv")
+    logging.info("  - graphs/drug_disease_graph.graphml")
+    logging.info("  - graphs/interactive_graph.html")
     
     return 0
 
@@ -279,10 +347,10 @@ if __name__ == "__main__":
     try:
         sys.exit(main())
     except KeyboardInterrupt:
-        print("\n\nPipeline interrupted by user")
+        logging.info("\n\nPipeline interrupted by user")
         sys.exit(1)
     except Exception as e:
-        print(f"\n✗ FATAL ERROR: {e}")
+        logging.info(f"\nFATAL ERROR: {e}")
         import traceback
         traceback.print_exc()
         sys.exit(1)

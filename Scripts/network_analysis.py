@@ -8,9 +8,10 @@ Analyzes the bipartite network structure to extract insights about:
 
 import pandas as pd
 import numpy as np
+import matplotlib
+matplotlib.use('Agg')  # Use non-interactive backend
 import matplotlib.pyplot as plt
 import seaborn as sns
-from pathlib import Path
 from collections import defaultdict
 import time
 
@@ -18,8 +19,18 @@ start_time = time.time()
 
 print("=== Network Analysis Script Started ===")
 
-# === File paths ===
-DATA_DIR = Path("C:/Users/sirda/Dropbox (Personal)/Documents/Fall '25/Data Mining/PubMed Project/Data")
+# ---------- CONFIG ----------
+from pathlib import Path
+
+SCRIPT_DIR = Path(__file__).resolve().parent
+
+PROJECT_ROOT = SCRIPT_DIR.parent
+
+DATA_DIR = PROJECT_ROOT / "Data"
+OUTPUT_DIR = PROJECT_ROOT / "Figures"
+LOGS_DIR = PROJECT_ROOT / "Logs"
+GRAPHS_DIR = PROJECT_ROOT / "Graphs"
+
 CO_MENTIONS_PATH = DATA_DIR / "co-mentions.csv"
 AGGREGATED_PATH = DATA_DIR / "aggregated.csv"
 
@@ -80,7 +91,9 @@ plt.xlabel("Number of Associated Diseases", fontsize=12)
 plt.ylabel("Drug", fontsize=12)
 plt.title("Top 20 Drugs by Polypharmacology\n(Number of Disease Associations)", fontsize=14)
 plt.tight_layout()
-plt.show()
+plt.savefig(OUTPUT_DIR / "network_top_drugs_polypharmacology.png", dpi=300, bbox_inches='tight')
+plt.close()
+print(f"Saved: {OUTPUT_DIR / 'network_top_drugs_polypharmacology.png'}")
 
 # === Disease Comorbidity Implications ===
 print("\n=== Disease Comorbidity Implications Analysis ===")
@@ -130,7 +143,9 @@ plt.ylabel("Disease", fontsize=11)
 plt.xticks(rotation=45, ha='right', fontsize=9)
 plt.yticks(rotation=0, fontsize=9)
 plt.tight_layout()
-plt.show()
+plt.savefig(OUTPUT_DIR / "network_disease_comorbidity_heatmap.png", dpi=300, bbox_inches='tight')
+plt.close()
+print(f"Saved: {OUTPUT_DIR / 'network_disease_comorbidity_heatmap.png'}")
 
 # Print some interesting high-similarity pairs
 print("\nHighest disease-disease similarities (excluding diagonal):")
@@ -181,7 +196,9 @@ ax2.set_yscale('log')
 ax2.grid(axis='y', alpha=0.3)
 
 plt.tight_layout()
-plt.show()
+plt.savefig(OUTPUT_DIR / "network_degree_distributions.png", dpi=300, bbox_inches='tight')
+plt.close()
+print(f"Saved: {OUTPUT_DIR / 'network_degree_distributions.png'}")
 
 # === Alzheimer's Disease Focus ===
 print("\n=== Alzheimer's Disease Specific Analysis ===")
@@ -241,7 +258,9 @@ if alzheimers_candidates:
     plt.title(f"Top 15 Drugs Associated with {alzheimers_name}\n(by number of co-mentioning papers)", 
               fontsize=14)
     plt.tight_layout()
-    plt.show()
+    plt.savefig(OUTPUT_DIR / "network_alzheimers_top_drugs.png", dpi=300, bbox_inches='tight')
+    plt.close()
+    print(f"Saved: {OUTPUT_DIR / 'network_alzheimers_top_drugs.png'}")
 else:
     print("No Alzheimer's disease terms found in the dataset.")
 

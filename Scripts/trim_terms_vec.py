@@ -5,9 +5,18 @@ import numpy as np
 from sklearn.cluster import AgglomerativeClustering
 from sklearn.metrics.pairwise import cosine_distances
 import csv
+# ---------- CONFIG ----------
 from pathlib import Path
 
-DATA_DIR = Path("C:/Users/sirda/Dropbox (Personal)/Documents/Fall '25/Data Mining/PubMed Project/Data")
+SCRIPT_DIR = Path(__file__).resolve().parent
+
+PROJECT_ROOT = SCRIPT_DIR.parent
+
+DATA_DIR = PROJECT_ROOT / "Data"
+FIGURES_DIR = PROJECT_ROOT / "Figures"
+LOGS_DIR = PROJECT_ROOT / "Logs"
+GRAPHS_DIR = PROJECT_ROOT / "Graphs"
+
 CO_FILE = DATA_DIR / "co-mentions.csv"
 PAPERS_FILE = DATA_DIR / "papers.csv"
 AGG_FILE = DATA_DIR / "aggregated.csv"

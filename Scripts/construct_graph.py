@@ -17,9 +17,11 @@ Outputs:
 
 import pandas as pd
 import networkx as nx
-from pathlib import Path
+
 import json
 from collections import Counter
+import matplotlib
+matplotlib.use('Agg')  # Use non-interactive backend
 import matplotlib.pyplot as plt
 import seaborn as sns
 
@@ -32,20 +34,26 @@ except ImportError:
     print("Note: pyvis not installed. Install with 'pip install pyvis' for interactive visualizations")
 
 # ---------- CONFIG ----------
-DATA_DIR = Path("C:/Users/sirda/Dropbox (Personal)/Documents/Fall '25/Data Mining/PubMed Project/Data")
+from pathlib import Path
+
+SCRIPT_DIR = Path(__file__).resolve().parent
+
+PROJECT_ROOT = SCRIPT_DIR.parent
+
+DATA_DIR = PROJECT_ROOT / "Data"
+FIGURES_DIR = PROJECT_ROOT / "Figures"
+LOGS_DIR = PROJECT_ROOT / "Logs"
+GRAPHS_DIR = PROJECT_ROOT / "Graphs"
+
 AGG_FILE = DATA_DIR / "aggregated_canonical.csv"
 MAPPING_FILE = DATA_DIR / "canonical_mapping.csv"
 TERMS_FILE = DATA_DIR / "terms.csv"
 
-# Output files
-GRAPH_DIR = DATA_DIR / "graphs"
-GRAPH_DIR.mkdir(exist_ok=True)
-
-FULL_GRAPH = GRAPH_DIR / "drug_disease_graph.graphml"
-FILTERED_GRAPH = GRAPH_DIR / "drug_disease_graph_filtered.graphml"
-STATS_FILE = GRAPH_DIR / "graph_statistics.txt"
-VIZ_HTML = GRAPH_DIR / "interactive_graph.html"
-VIZ_FILTERED_HTML = GRAPH_DIR / "interactive_graph_filtered.html"
+FULL_GRAPH = GRAPHS_DIR / "drug_disease_graph.graphml"
+FILTERED_GRAPH = GRAPHS_DIR / "drug_disease_graph_filtered.graphml"
+STATS_FILE = GRAPHS_DIR / "graph_statistics.txt"
+VIZ_HTML = GRAPHS_DIR / "interactive_graph.html"
+VIZ_FILTERED_HTML = GRAPHS_DIR / "interactive_graph_filtered.html"
 
 # Filtering parameters
 MIN_PAPERS = 5  # Minimum number of papers for an edge to be included in filtered graph

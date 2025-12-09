@@ -4,16 +4,26 @@ import csv, sys, time, datetime as dt
 from urllib.error import HTTPError, URLError
 
 # ---------- CONFIG ----------
+
+from pathlib import Path
+
+# Get project root directory
+SCRIPT_DIR = Path(__file__).resolve().parent
+PROJECT_ROOT = SCRIPT_DIR.parent
+DATA_DIR = PROJECT_ROOT / "Data"
+DATA_DIR.mkdir(exist_ok=True)
+
+OUT_CSV = DATA_DIR / "papers.csv"
+
 EMAIL      = "costad3@wit.edu"
 API_KEY    = "c44aa473bb61316f789ea8d5f3b35a73f208"
-# IMPORTANT: Update BASE_TERM to match your actual search
+# IMPORTANT: Update BASE_TERM to match search
 BASE_TERM  = ('hasabstract[text] AND medline[sb]')
 START_DATE = "2015/10/01"
 END_DATE   = "2025/10/03"
 BATCH      = 200
 MAX_RETRY  = 6
 BASE_DELAY = 0.2  # Increased from 0.12 for broader searches
-OUT_CSV    = "papers.csv"
 MAX_RESULTS_PER_CHUNK = 10000  # PubMed's hard limit
 
 Entrez.email = EMAIL
