@@ -7,48 +7,48 @@ FULL GRAPH
 Nodes: 14,774
   - Disease nodes: 4,920
   - Drug nodes: 9,854
-Edges: 191,681
-Density: 0.001756
-Average degree: 25.95
-Max degree: 3,163
-Connected components: 10,285
-Largest component: 4,490 nodes (30.4%)
+Edges: 446,390
+Density: 0.004091
+Average degree: 60.43
+Max degree: 4,117
+Connected components: 8,255
+Largest component: 6,520 nodes (44.1%)
 
-Total papers represented: 6,512,566
-Average papers per edge: 34.0
-Max papers for single edge: 74,346
+Total papers represented: 12,399,129
+Average papers per edge: 27.8
+Max papers for single edge: 152,503
 
 
 FILTERED GRAPH (≥5 papers)
 ----------------------------------------------------------------------
-Nodes: 2,814
-Edges: 52,973
-Density: 0.013384
+Nodes: 5,135
+Edges: 125,664
+Density: 0.009533
 
 
 TOP 10 MOST CONNECTED NODES
 ----------------------------------------------------------------------
- 1. Alzheimer Disease                                  [Disease] (degree: 3,163)
- 2. Tics                                               [Disease] (degree: 3,159)
- 3. Sexually Transmitted Diseases                      [Disease] (degree: 3,049)
- 4. Bites, Human                                       [Disease] (degree: 2,596)
- 5. Sudden Infant Death                                [Disease] (degree: 2,422)
- 6. AIDS-Related Complex                               [Disease] (degree: 2,365)
- 7. Dementia                                           [Disease] (degree: 2,134)
- 8. Pain                                               [Disease] (degree: 2,075)
- 9. Inflammation                                       [Disease] (degree: 2,055)
-10. Parkinson Disease                                  [Disease] (degree: 2,002)
+ 1. Tics                                               [Disease] (degree: 4,117)
+ 2. Sexually Transmitted Diseases                      [Disease] (degree: 4,063)
+ 3. Bites, Human                                       [Disease] (degree: 3,709)
+ 4. Sudden Infant Death                                [Disease] (degree: 3,600)
+ 5. AIDS-Related Complex                               [Disease] (degree: 3,438)
+ 6. Pain                                               [Disease] (degree: 2,966)
+ 7. Pica                                               [Disease] (degree: 2,679)
+ 8. Precursor Cell Lymphoblastic Leukemia-Lymphoma     [Disease] (degree: 2,667)
+ 9. Death                                              [Disease] (degree: 2,437)
+10. Noma                                               [Disease] (degree: 2,395)
 
 
 TOP 10 STRONGEST ASSOCIATIONS (by paper count)
 ----------------------------------------------------------------------
- 1. Inosine Monophosphate          ↔ Alzheimer Disease              (74,346 papers)
- 2. Inosine Monophosphate          ↔ Tics                           (71,884 papers)
- 3. Tacrine                        ↔ Alzheimer Disease              (62,655 papers)
- 4. Inosine Monophosphate          ↔ Sexually Transmitted Diseases  (61,289 papers)
- 5. Tacrine                        ↔ Tics                           (59,819 papers)
- 6. Tin                            ↔ Alzheimer Disease              (59,337 papers)
- 7. Tin                            ↔ Tics                           (57,936 papers)
- 8. Tolnaftate                     ↔ Alzheimer Disease              (54,442 papers)
- 9. Tolnaftate                     ↔ Tics                           (53,301 papers)
-10. Tin                            ↔ Sexually Transmitted Diseases  (50,717 papers)
+ 1. Tacrine                        ↔ Tics                           (152,503 papers)
+ 2. Inosine Monophosphate          ↔ Tics                           (146,134 papers)
+ 3. Tin                            ↔ Tics                           (138,877 papers)
+ 4. Tacrine                        ↔ Sexually Transmitted Diseases  (136,131 papers)
+ 5. Inosine Monophosphate          ↔ Sexually Transmitted Diseases  (129,989 papers)
+ 6. Tin                            ↔ Sexually Transmitted Diseases  (129,688 papers)
+ 7. Tolnaftate                     ↔ Tics                           (120,316 papers)
+ 8. Tolnaftate                     ↔ Sexually Transmitted Diseases  (112,529 papers)
+ 9. Triacetoneamine-N-Oxyl         ↔ Tics                           (98,247 papers)
+10. Triacetoneamine-N-Oxyl         ↔ Sexually Transmitted Diseases  (85,869 papers)

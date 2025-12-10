@@ -407,7 +407,7 @@ else:
 print("\n" + "=" * 70)
 print("✓ Graph construction complete!")
 print("=" * 70)
-print(f"\nFiles saved to: {GRAPH_DIR}")
+print(f"\nFiles saved to: {GRAPHS_DIR}")
 print("\nGenerated files:")
 print(f"  1. {FULL_GRAPH.name} - Full network (NetworkX GraphML)")
 print(f"  2. {FILTERED_GRAPH.name} - Filtered network (≥{MIN_PAPERS} papers)")
