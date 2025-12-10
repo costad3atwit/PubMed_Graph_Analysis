@@ -104,8 +104,8 @@ disease_degrees = [(disease_ui, len(drugs), disease_names[disease_ui])
                    for disease_ui, drugs in disease_to_drugs.items()]
 disease_degrees.sort(key=lambda x: x[1], reverse=True)
 
-# Use top 25 diseases for the heatmap (adjust as needed)
-TOP_N = 25
+# Use top 15 diseases for the heatmap
+TOP_N = 15
 top_diseases = [d[0] for d in disease_degrees[:TOP_N]]
 top_disease_names = [d[2] for d in disease_degrees[:TOP_N]]
 
