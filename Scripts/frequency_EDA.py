@@ -48,7 +48,7 @@ try:
     print(f"       Loaded {len(terms_df):,} terms")
     print(f"       Loaded {len(papers_df):,} papers")
 except FileNotFoundError as e:
-    print(f"      ✗ File not found: {e}")
+    print(f"       File not found: {e}")
     exit(1)
 
 # === Detect title column ===
@@ -71,13 +71,13 @@ all_terms = []
 term_to_id = {}  # Map normalized term to MeSH ID
 
 for _, row in terms_df.iterrows():
-    mesh_id = row.get("id", "").strip()
-    if not mesh_id:
+    mesh_id = str(row.get("id", "")).strip()
+    if not mesh_id or mesh_id == "nan":
         continue
     
     # Add main term
-    main_term = row.get("term", "").strip()
-    if main_term:
+    main_term = str(row.get("term", "")).strip()
+    if main_term and main_term != "nan":
         normalized = normalize(main_term)
         if normalized:
             all_terms.append((normalized, mesh_id, main_term))
